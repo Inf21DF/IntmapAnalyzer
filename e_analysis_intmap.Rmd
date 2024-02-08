@@ -13,11 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
-#library(stringr)
 files_list <- list.files(path = "csv_files")
-#list_length <- length(files_list)
-#problemClass <- str_sub(files_list, 1, 3)
-#problemClass
 
 problem_lst = vector("list", length=length(files_list))
 i = 1
@@ -34,15 +30,20 @@ problems <- do.call(rbind, problem_lst)
 
 str(problems)
 
-#summary(cars)
+
 #<http://rmarkdown.rstudio.com>.
 ```
 
 #Allgemeine Untersuchung
+```{r, echo=FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
 Häufigkeit Absolut
-Wie häufig Empty pro Problem-Klasse
-Wie häufig Single pro Problem-Klasse
-Max Value Integer pro Porblemklasse
+Wie häufig Empty - spielt Größe eine Rolle
+Wie häufig Single - spielt Größe eine Rolle 
+Max Value Integer 
 Wie häufig Array pro Problem-Klasse
 Wie häufig Tree pro Problem-Klasse
 Welches ist der häufigste Datentyp
@@ -71,7 +72,21 @@ Density           : num  NA NA NA NA NA NA NA NA NA NA ...
 Structure         : num  NA NA NA NA NA NA NA NA NA NA ...
 
 
-#Vergleich zwischen Intmap und Array
+#Vergleich zwischen Array und Tree
 Größe
 Dichte 
 Verwendung (Also wie oft wurden die Strukturen insgesamt verwendet und wie oft wurden welche Funktionen angewendet)
+
+```{r, echo=FALSE}
+
+```
+
+Baum (Linearität und Dichte)
+```{r, echo=FALSE}
+TreeLinearity <- problems %>% filter(!is.na(Linearity)) 
+
+ggplot(data = TreeLinearity, aes(x = Linearity, y = TreeHeight)) + geom_point() + labs(x="Linearität", y="Größe", color="Typ")  + ggtitle("Linearität im Bezug zur Größe betrachtet")
+
+TreeLinearity %>% ggplot(aes(x=Density, y=as.factor(TreeHeight), group=factor(TreeHeight))) + stat_boxplot(geom = "errorbar") + geom_boxplot() + labs(x="Dichte", y="Baumhöhe")  + ggtitle("Verteilung Dichte auf Baumhöhe")
+
+```
