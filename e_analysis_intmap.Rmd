@@ -40,9 +40,47 @@ for (file_name in common_stat_lst) {
 }
 common_stats <- do.call(rbind, common_stat_lst)
 
+common_stats$tree_empty_ratio <- common_stats$EmptyInvoked/common_stats$TreeInvoked
+common_stats$tree_int_ratio <- common_stats$IntInvoked/common_stats$TreeInvoked
+common_stats$tree_array_ratio <- common_stats$ArrayInvoked/common_stats$TreeInvoked
+common_stats$array_empty_ratio <- common_stats$EmptyInvoked/common_stats$ArrayInvoked
+common_stats$array_int_ratio <- common_stats$IntInvoked/common_stats$ArrayInvoked
+common_stats$empty_int_ratio <- common_stats$IntInvoked/common_stats$EmptyInvoked
+
+common_stats_cleaned <- common_stats[which(!is.na(common_stats$IntInvoked)==TRUE),]
+common_stats_cleaned <- common_stats_cleaned[which(!is.na(common_stats_cleaned$int_empty_ratio)==TRUE),]
+
 str(problems)
 str(common_stats)
 
+
+min(common_cleaned_df$tree_empty_ratio)     # empty/tree    => 13.17913
+min(common_cleaned_df$tree_int_ratio)       # int/tree      => 2.111111
+min(common_cleaned_df$tree_array_ratio)     # array/tree    => 1.111111
+min(common_cleaned_df$array_empty_ratio)    # empty/array   => 2.632878
+min(common_cleaned_df$array_int_ratio)      # int/array     => 1.9
+min(common_cleaned_df$empty_int_ratio)      # int/empty     => 0.007283919
+
+max(common_cleaned_df$tree_empty_ratio)     # empty/tree    => 41.23534
+max(common_cleaned_df$tree_int_ratio)       # int/tree      => 4931.364
+max(common_cleaned_df$tree_array_ratio)     # array/tree    => 13.64274
+max(common_cleaned_df$array_empty_ratio)    # empty/array   => 15.1
+max(common_cleaned_df$array_int_ratio)      # int/array     => 361.4645
+max(common_cleaned_df$empty_int_ratio)      # int/empty     => 7.947368
+
+median(common_cleaned_df$tree_empty_ratio)     # empty/tree    => 27.93485
+median(common_cleaned_df$tree_int_ratio)       # int/tree      => 171.3408
+median(common_cleaned_df$tree_array_ratio)     # array/tree    => 7.724211
+median(common_cleaned_df$array_empty_ratio)    # empty/array   => 3.551031
+median(common_cleaned_df$array_int_ratio)      # int/array     => 22.47146
+median(common_cleaned_df$empty_int_ratio)      # int/empty     => 0.1589089
+
+mean(common_cleaned_df$tree_empty_ratio)     # empty/tree    => 27.71609
+mean(common_cleaned_df$tree_int_ratio)       # int/tree      => 240.3827
+mean(common_cleaned_df$tree_array_ratio)     # array/tree    => 7.523198
+mean(common_cleaned_df$array_empty_ratio)    # empty/array   => 4.119955
+mean(common_cleaned_df$array_int_ratio)      # int/array     => 26.12084
+mean(common_cleaned_df$empty_int_ratio)      # int/empty     => 0.4253058
 
 #<http://rmarkdown.rstudio.com>.
 ```
