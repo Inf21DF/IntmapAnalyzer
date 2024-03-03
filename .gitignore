@@ -1,2 +1,5 @@
 *.csv
 *.Rhistory
+*.rds
+*.rda
+*.out

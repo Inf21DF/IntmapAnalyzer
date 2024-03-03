@@ -9,37 +9,224 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Einführung
+Dieses Skript dient der Analyse des Probelaufs, welcher am 15.02 mit E durchgeführt wurde. Vorrangig soll dabei die Struktur der Intmap und ihre Effizienz in den Dimensionen Zeit und Raum untersucht werden.
+
+```{r, echo=FALSE}
+############################
+# LOAD DATA
+############################
+# nohup.out
+
+error_file_name <- "error/nohup.out"
+nohup_output <- readLines(error_file_name)
 
 
-```{r}
-problem_files_list <- list.files(path = "csv_files")
-problem_lst = vector("list", length=length(problem_files_list))
-i = 1
-
-for (file_name in problem_files_list) {
-  file_path <- paste("csv_files/", file_name, sep='')
-  first_file <- read.csv(file_path, sep=";", header=TRUE, row.names=NULL)
-  first_file$ProblemClass <- substr(file_name, 1, 3)
-  first_file$Problem <- sub("\\.csv", "", file_name)
-  problem_lst[[i]] <- first_file
-  i = i+1
-}
-problems <- do.call(rbind, problem_lst)
-
-
+# common_stats
 common_files_list <- list.files(path = "csv_common_stats")
-common_stat_lst = vector("list", length=length(common_files_list))
+common_stat_lst <- vector("list", length=length(common_files_list))
 i = 1
 
-for (file_name in common_stat_lst) {
-  file_path <- paste("csv_common_stats/", "AGT_common_stats.csv", sep='')
+for (file_name in common_files_list) {
+  file_path <- paste("csv_common_stats/", file_name, sep='')
   first_file <- read.csv(file_path, sep=";", header=TRUE, row.names=NULL)
   common_stat_lst[[i]] <- first_file
   i = i+1
 }
+  
 common_stats <- do.call(rbind, common_stat_lst)
 
+# problem stats
+
+# problem_files_list <- list.files(path = "csv_files")
+# problem_lst = vector("list", length=length(problem_files_list))
+# i = 1
+# 
+# for (file_name in problem_files_list) {
+#   file_path <- paste("csv_files/", file_name, sep='')
+#   first_file <- read.csv(file_path, sep=";", header=TRUE, row.names=NULL)
+#   first_file$ProblemClass <- substr(file_name, 1, 3)
+#   first_file$Problem <- sub("\\.csv", "", file_name)
+#   problem_lst[[i]] <- first_file
+#   i = i+1
+# }
+# problems <- do.call(rbind, problem_lst)
+
+#https://statistik-dresden.de/daten-mit-r-in-bloecken-verarbeiten-mit-iotools-big-data-werkzeug/
+
+
+
+#install.packages('dplyr')
+#install.packages('R.utils')
+#install.packages('iotools')
+#install.packages('data.table')
+
+
+str(common_stats)
+
+#<http://rmarkdown.rstudio.com>.
+
+
+```
+
+## Bewertung des Probelaufs
+```{r, echo=FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
+Im Folgenden eine Untersuchung der Ergebnisse des Probelaufs. Dafür soll zunächst betrachtet werden, wie die Verarbeitung durchlaufen wurde und ob vlt. einige Probleme nicht durchlaufen wurden. Als Quelle dient hierfür die nohup.out-Datei, welche beim Probelauf angelegt wurde. Diese wurde dahingehend bearbeitet, als das die Ausgaben früherer Probeläufe entfernt wurden. 
+
+
+```{r, echo=FALSE}
+############################
+# ANALYSIS OF nohup.out
+############################
+
+hol_count <- 0
+type_error_count <- 0
+out_of_memory_count <- 0
+time_limit_exceeded <- 0
+
+for (nohup_str in nohup_output) {
+  if (grepl("^eprover: To support HOL reasoning,", nohup_str)) {
+    hol_count <- hol_count + 1
+  } else if (grepl("^eprover: Out of Memory", nohup_str)) {
+    out_of_memory_count <- out_of_memory_count + 1
+  } else if (grepl("^eprover: Type error", nohup_str)) {
+    type_error_count <- type_error_count + 1
+  } else if (grepl("^eprover: CPU time limit exceeded, terminating", nohup_str)) {
+    time_limit_exceeded <- time_limit_exceeded + 1
+  }
+}
+
+# common_stats
+```
+
+
+Beim Überfliegen der Datei fiel auf, dass in einigen Fällen E die Verarbeitung mehrerer Probleme aus verschiedenen Gründen abbrechen musste. Dabei wurden folgende Gründe identifiziert:
+
+1. Dass die Formel nicht bearbeitet werden konnte, weil sie in einer Logik höherer Stufe definiert war und E erst wieder neu kompiliert werden müsste um diese zu bearbeiten (dies betraf `r hol_count` Probleme)
+2. Dass es Fehler bei der Typisierung gab (dies betraf `r type_error_count` Probleme)
+3. Dass die zulässige Speichergröße Überschritten wurde (dies betraf `r out_of_memory_count` Probleme)
+4. Dass das Zeitlimit überschritten wurde (dies betraf `r time_limit_exceeded` Probleme)
+
+```{r, echo=FALSE}
+common_stats_rows <- nrow(common_stats)
+common_stats$Reason[common_stats$Reason == " "] <- "Empty"
+
+distribution_reason <- common_stats %>% count(Reason) 
+#distribution_reason$Reason[distribution_reason$Reason == " "] <- "Empty"
+#distribution_reason$Reason
+
+dr_empty <- distribution_reason$n[distribution_reason$Reason == 'Empty']
+dr_incomplete <- distribution_reason$n[distribution_reason$Reason == 'incomplete']
+dr_maxmem <- distribution_reason$n[distribution_reason$Reason == 'maxmem']
+dr_maxres <- distribution_reason$n[distribution_reason$Reason == 'maxres']
+dr_maxtime <- distribution_reason$n[distribution_reason$Reason == 'maxtime']
+dr_success <- distribution_reason$n[distribution_reason$Reason == 'success']
+dr_na <- distribution_reason$n[is.na(distribution_reason$Reason)]
+
+```
+
+Diese konnten also nicht bearbeitet werden und bei Ihnen wurde deshalb die weitere Verarbeitung abgebrochen. Bei den Problemen, die aber bearbeitet wurden, gab ein beachtlicher Anteil keine Rückgabewerte. Dies verrät ein Blick in die Dateien mit den common_stats und auch ein Vergleich der Dateigrößen der einzelnen Problemdateien. Für 4 Problemdomänen (HWC, LIN, PRD und RAL) wurden vom Python-Skript (leere) CSV-Dateien angelegt, obwohl diese keine Probleme mit den gesuchten Härtegrad verfügen. Eine fünfte Problemdomäne (QUA) beinhaltete nur ein Problem, dessen CSV-Datei mit den spezifischen Werten leer war. Überhaupt waren viele Problemdateien leer - insgesamt 1.593. 
+
+Eine Untersuchung der Spalte Reason für alle bearbeitetn Probleme gibt dabei folgende Verteilung:
+
+```{r, echo=FALSE}
+# Distribution Reason
+common_stats$Problem = gsub(" ", "", common_stats$Problem)
+common_stats %>% ggplot(aes(x=factor(Reason), fill=Reason)) + geom_bar(stat="count", width=0.9, position="dodge") + labs(x="Reason", y="Anzahl", color="Typ")  + ggtitle("Verteilung Reason")
+
+```
+
+Von `r common_stats_rows` bearbeiteten Problemen waren:
+
+Ohne Rückgabe: `r dr_empty[1]` 
+
+NA: `r dr_na[1]`
+
+Unvollständig:`r dr_incomplete[1]`
+
+Maximalen Speicher: `r dr_maxmem[1]`
+
+Maximale Ressourcen: `r dr_maxres[1]`
+
+Maximale Ausführungszeit: `r dr_maxtime[1]`
+
+Erfolgreich: `r dr_success[1]`
+
+
+Folgt man dieser Verteilung, so ist leicht anzunehmen, dass ein Großteil der leeren Dateien auf Empty/ Ohne Rückgabewert und NA entfallen wird. (Wobei Empy = und NA = ).
+
+
+```{r, echo=FALSE}
+# get a list of the empty files and safe as data-frame
+empty_files_list <- list.files(path = "empty")
+empty_df <- data.frame(empty_files_list) 
+colnames(empty_df)[colnames(empty_df) == 'empty_files_list'] <- 'Problem'
+empty_df$Problem = gsub("\\.csv", "", empty_df$Problem)
+
+# Distribution Reason on empty files
+common_stats_with_empty = merge(x=common_stats,y=empty_df) #, by="Problem", all.y=TRUE
+common_stats_with_empty %>% ggplot(aes(x=factor(Reason), fill=Reason)) + geom_bar(stat="count", width=0.9, position="dodge") + labs(x="Reason", y="Anzahl", color="Typ")  + ggtitle("Verteilung Reason auf leere Dateien")
+
+distribution_reason_on_empty <- common_stats_with_empty %>% count(Reason) 
+
+dr_empty_on_empty <- distribution_reason_on_empty$n[distribution_reason_on_empty$Reason == 'Empty']
+dr_incomplete_on_empty <- distribution_reason_on_empty$n[distribution_reason_on_empty$Reason == 'incomplete']
+dr_maxmem_on_empty <- distribution_reason_on_empty$n[distribution_reason_on_empty$Reason == 'maxmem']
+dr_maxres_on_empty <- distribution_reason_on_empty$n[distribution_reason_on_empty$Reason == 'maxres']
+dr_maxtime_on_empty <- distribution_reason_on_empty$n[distribution_reason_on_empty$Reason == 'maxtime']
+dr_success_on_empty <- distribution_reason_on_empty$n[distribution_reason_on_empty$Reason == 'success']
+dr_na_on_empty <- distribution_reason_on_empty$n[is.na(distribution_reason_on_empty$Reason)]
+
+#successful_but_empty <- common_stats_with_empty$Problem[common_stats_with_empty$Reason == 'success']
+```
+
+Dabei verteilen sich die Werte auf die 1.593 leeren CSV-Dateien wie folgt:
+
+Ohne Rückgabe: `r dr_empty_on_empty[1]` 
+
+NA: `r dr_na_on_empty[1]`
+
+Unvollständig:`r dr_incomplete_on_empty[1]`
+
+Maximalen Speicher: `r dr_maxmem_on_empty[1]`
+
+Maximale Ressourcen: `r dr_maxres_on_empty[1]`
+
+Maximale Ausführungszeit: `r dr_maxtime_on_empty[1]`
+
+Erfolgreich: `r dr_success_on_empty[1]`
+
+
+Der Großteil ist ohne Rückgabe geblieben, wobei aber nicht alle ohne Rückgabe eine leere CSV-Datei haben. Auch nicht alle NAs. Ebenso erstaunlich ist, dass es 2 leere Dateien gibt, wo die Probleme anscheinend erfolgreich bearbeitet worden sind. In nur zwei Fällen (Maximalen Speicher und Maximale Ausführungszeit) decken sich die Werte.
+
+Bei den erfolgreichen Dateien handelt es sich um LCL524+1.p und SWW237+1.p. Beide wurden mit Status T beendet. Ansonsten haben diese keine anderen Werte.
+
+[//]: # (Ohne Rückgabewert ergibt sich aus ...)
+[//]: # (Die anderen Werte sind vertrtetbar.)
+
+Damit bleiben aber noch immer 3.953 CSV-Dateien mit spezifischen und 50 Dateien mit allgemeinen Daten, die für eine Auswertung zur Verfügung stehen.
+
+
+## Allgemeine Untersuchung der Intmap
+In Folgenden soll untersucht werden, wie oft die Intmap und ihre einzelnen Datenstrukturen verwendet und gelöscht wurden. Dabei sollen auch IMEmpty und IMInteger näher betrachtet werden.
+
+
+```{r, echo=FALSE}
+############################
+# ANALYSIS OF THE COMMON STATS
+############################
+# Helper-function to calculate mode
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+
+# Adding ratio to common_stats
 common_stats$tree_empty_ratio <- common_stats$EmptyInvoked/common_stats$TreeInvoked
 common_stats$tree_int_ratio <- common_stats$IntInvoked/common_stats$TreeInvoked
 common_stats$tree_array_ratio <- common_stats$ArrayInvoked/common_stats$TreeInvoked
@@ -47,102 +234,215 @@ common_stats$array_empty_ratio <- common_stats$EmptyInvoked/common_stats$ArrayIn
 common_stats$array_int_ratio <- common_stats$IntInvoked/common_stats$ArrayInvoked
 common_stats$empty_int_ratio <- common_stats$IntInvoked/common_stats$EmptyInvoked
 
+# Cleaning common_stats
 common_stats_cleaned <- common_stats[which(!is.na(common_stats$IntInvoked)==TRUE),]
-common_stats_cleaned <- common_stats_cleaned[which(!is.na(common_stats_cleaned$int_empty_ratio)==TRUE),]
+common_stats_cleaned <- common_stats_cleaned[which(!is.na(common_stats_cleaned$empty_int_ratio)==TRUE),]
 
-str(problems)
-str(common_stats)
+# Creating additional stats for min, max, median and mean for each type-invocation and deletion
+min_empty_invoked <- min(common_stats_cleaned$EmptyInvoked)
+min_int_invoked <- min(common_stats_cleaned$IntInvoked)
+min_array_invoked <- min(common_stats_cleaned$ArrayInvoked)
+min_tree_invoked <- min(common_stats_cleaned$TreeInvoked)
+min_map_deleted <- min(common_stats_cleaned$MapDeleted)
+min_empty_deleted <- min(common_stats_cleaned$EmptyDeleted)
+min_int_deleted <- min(common_stats_cleaned$IntDeleted)
+min_array_deleted <- min(common_stats_cleaned$ArrayDeleted)
+min_tree_deleted <- min(common_stats_cleaned$TreeDeleted)
+min_intmap_items <- min(common_stats_cleaned$IntmapItems)
 
+mode_empty_deleted <- getmode(common_stats_cleaned$EmpyDeleted)
+mode_array_deleted <- getmode(common_stats_cleaned$ArrayDeleted)
+mode_tree_deleted <- getmode(common_stats_cleaned$TreeDeleted)
+mode_map_deleted <- getmode(common_stats_cleaned$MapDeleted)
 
-min(common_cleaned_df$tree_empty_ratio)     # empty/tree    => 13.17913
-min(common_cleaned_df$tree_int_ratio)       # int/tree      => 2.111111
-min(common_cleaned_df$tree_array_ratio)     # array/tree    => 1.111111
-min(common_cleaned_df$array_empty_ratio)    # empty/array   => 2.632878
-min(common_cleaned_df$array_int_ratio)      # int/array     => 1.9
-min(common_cleaned_df$empty_int_ratio)      # int/empty     => 0.007283919
+max_empty_invoked <- max(common_stats_cleaned$EmptyInvoked)
+max_int_invoked <- max(common_stats_cleaned$IntInvoked)
+max_array_invoked <- max(common_stats_cleaned$ArrayInvoked)
+max_tree_invoked <- max(common_stats_cleaned$TreeInvoked)
+max_map_deleted <- max(common_stats_cleaned$MapDeleted)
+max_empty_deleted <- max(common_stats_cleaned$EmptyDeleted)
+max_int_deleted <- max(common_stats_cleaned$IntDeleted)
+max_array_deleted <- max(common_stats_cleaned$ArrayDeleted)
+max_tree_deleted <- max(common_stats_cleaned$TreeDeleted)
+max_intmap_items <- max(common_stats_cleaned$IntmapItems)
 
-max(common_cleaned_df$tree_empty_ratio)     # empty/tree    => 41.23534
-max(common_cleaned_df$tree_int_ratio)       # int/tree      => 4931.364
-max(common_cleaned_df$tree_array_ratio)     # array/tree    => 13.64274
-max(common_cleaned_df$array_empty_ratio)    # empty/array   => 15.1
-max(common_cleaned_df$array_int_ratio)      # int/array     => 361.4645
-max(common_cleaned_df$empty_int_ratio)      # int/empty     => 7.947368
+med_empty_invoked <- median(common_stats_cleaned$EmptyInvoked)
+med_int_invoked <- median(common_stats_cleaned$IntInvoked)
+med_array_invoked <- median(common_stats_cleaned$ArrayInvoked)
+med_tree_invoked <- median(common_stats_cleaned$TreeInvoked)
+med_map_deleted <- median(common_stats_cleaned$MapDeleted)
+med_empty_deleted <- median(common_stats_cleaned$EmptyDeleted)
+med_int_deleted <- median(common_stats_cleaned$IntDeleted)
+med_array_deleted <- median(common_stats_cleaned$ArrayDeleted)
+med_tree_deleted <- median(common_stats_cleaned$TreeDeleted)
+med_intmap_items <- median(common_stats_cleaned$IntmapItems)
 
-median(common_cleaned_df$tree_empty_ratio)     # empty/tree    => 27.93485
-median(common_cleaned_df$tree_int_ratio)       # int/tree      => 171.3408
-median(common_cleaned_df$tree_array_ratio)     # array/tree    => 7.724211
-median(common_cleaned_df$array_empty_ratio)    # empty/array   => 3.551031
-median(common_cleaned_df$array_int_ratio)      # int/array     => 22.47146
-median(common_cleaned_df$empty_int_ratio)      # int/empty     => 0.1589089
+mean_empty_invoked <- mean(common_stats_cleaned$EmptyInvoked)
+mean_int_invoked <- mean(common_stats_cleaned$IntInvoked)
+mean_array_invoked <- mean(common_stats_cleaned$ArrayInvoked)
+mean_tree_invoked <- mean(common_stats_cleaned$TreeInvoked)
+mean_map_deleted <- mean(common_stats_cleaned$MapDeleted)
+mean_empty_deleted <- mean(common_stats_cleaned$EmptyDeleted)
+mean_int_deleted <- mean(common_stats_cleaned$IntDeleted)
+mean_array_deleted <- mean(common_stats_cleaned$ArrayDeleted)
+mean_tree_deleted <- mean(common_stats_cleaned$TreeDeleted)
+mean_intmap_items <- mean(common_stats_cleaned$IntmapItems)
 
-mean(common_cleaned_df$tree_empty_ratio)     # empty/tree    => 27.71609
-mean(common_cleaned_df$tree_int_ratio)       # int/tree      => 240.3827
-mean(common_cleaned_df$tree_array_ratio)     # array/tree    => 7.523198
-mean(common_cleaned_df$array_empty_ratio)    # empty/array   => 4.119955
-mean(common_cleaned_df$array_int_ratio)      # int/array     => 26.12084
-mean(common_cleaned_df$empty_int_ratio)      # int/empty     => 0.4253058
+min_tree_empty_ratio <- min(common_stats_cleaned$tree_empty_ratio)     # empty/tree    => 13.17913
+min_tree_int_ratio <- min(common_stats_cleaned$tree_int_ratio)       # int/tree      => 2.111111
+min_tree_array_ratio <- min(common_stats_cleaned$tree_array_ratio)     # array/tree    => 1.111111
+min_array_empty_ratio <- min(common_stats_cleaned$array_empty_ratio)    # empty/array   => 2.632878
+min_array_int_ratio <- min(common_stats_cleaned$array_int_ratio)      # int/array     => 1.9
+min_empty_int_ratio <- min(common_stats_cleaned$empty_int_ratio)      # int/empty     => 0.007283919
 
-#<http://rmarkdown.rstudio.com>.
+max_tree_empty_ratio <-max(common_stats_cleaned$tree_empty_ratio)     # empty/tree    => 41.23534
+max_tree_int_ratio <-max(common_stats_cleaned$tree_int_ratio)       # int/tree      => 4931.364
+max_tree_array_ratio <-max(common_stats_cleaned$tree_array_ratio)     # array/tree    => 13.64274
+max_array_empty_ratio <-max(common_stats_cleaned$array_empty_ratio)    # empty/array   => 15.1
+max_array_int_ratio <-max(common_stats_cleaned$array_int_ratio)      # int/array     => 361.4645
+max_empty_int_ratio <-max(common_stats_cleaned$empty_int_ratio)      # int/empty     => 7.947368
+
+med_tree_empty_ratio <- median(common_stats_cleaned$tree_empty_ratio)     # empty/tree    => 27.93485
+med_tree_int_ratio <- median(common_stats_cleaned$tree_int_ratio)       # int/tree      => 171.3408
+med_tree_array_ratio <- median(common_stats_cleaned$tree_array_ratio)     # array/tree    => 7.724211
+med_array_empty_ratio <- median(common_stats_cleaned$array_empty_ratio)    # empty/array   => 3.551031
+med_array_int_ratio <- median(common_stats_cleaned$array_int_ratio)      # int/array     => 22.47146
+med_empty_int_ratio <- median(common_stats_cleaned$empty_int_ratio)      # int/empty     => 0.1589089
+
+mean_tree_empty_ratio <- mean(common_stats_cleaned$tree_empty_ratio)     # empty/tree    => 27.71609
+mean_tree_int_ratio <- mean(common_stats_cleaned$tree_int_ratio)       # int/tree      => 240.3827
+mean_tree_array_ratio <- mean(common_stats_cleaned$tree_array_ratio)     # array/tree    => 7.523198
+mean_array_empty_ratio <- mean(common_stats_cleaned$array_empty_ratio)    # empty/array   => 4.119955
+mean_array_int_ratio <- mean(common_stats_cleaned$array_int_ratio)      # int/array     => 26.12084
+mean_empty_int_ratio <- mean(common_stats_cleaned$empty_int_ratio)      # int/empty     => 0.4253058
+
 ```
 
-#Allgemeine Untersuchung
+Im Allgemeinen gibt sich bezüglich der Verteilung zw. existierenden und gelöschten Intmaps folgendes Bild:
+
+
 ```{r, echo=FALSE}
-library(ggplot2)
-library(dplyr)
+
+# Comparison: Existing Intmaps vs. deleted Intmaps
+part_inv_del_df <- data.frame(common_stats_cleaned$IntmapItems, common_stats_cleaned$MapDeleted)
+colnames(part_inv_del_df)[colnames(part_inv_del_df) == 'common_stats_cleaned.IntmapItems'] <- 'Items'
+colnames(part_inv_del_df)[colnames(part_inv_del_df) == 'common_stats_cleaned.MapDeleted'] <- 'Deleted'
+
+ggplot(stack(part_inv_del_df), aes(x = ind, y = values)) +  geom_boxplot() + labs(x="Datenstruktur", y="Anzahl", color="Typ") + ggtitle("Vergleich: Existierende vs. gelöschte Intmaps")
+
 ```
 
-Häufigkeit Absolut
+Zu erkennen ist, dass während der Problembearbeitung Intmaps nur selten gelöscht werden. Im Durchschnitt wird `r sprintf(mean_map_deleted, fmt = '%#.4f')` gelöscht, wobei der Median nur `r med_map_deleted` und der Modus `r mode_map_deleted` beträgt. Die meisten Löschungen waren `r max_map_deleted`. Es gab auch Fälle in denen keine Intmaps gelöscht wurden. 
+
+Dies gegenüber im Durchschnitt `r sprintf(mean_intmap_items, fmt = '%#.4f')` angelegten Intmaps. Der Median von bestehenden Intmaps vor der Löschung beträgt dabei `r sprintf(med_intmap_items, fmt = '%#.1f')`. Im seltensten Fall werden `r min_intmap_items` und im häufigsten Fall `r sprintf(max_intmap_items, fmt = '%#.0f')` angelegt.
+
+Unten die Verteilung der Anlagen auf die einzelnen Datenstrukturen. Dabei werden Integer gesondert betrachtet, da diese die Auswertung verzerren würden:
+
+```{r, echo=FALSE}
+
+# Comparison: Existing Intmaps per type
+part_invoked_df <- data.frame(common_stats_cleaned$EmptyInvoked, common_stats_cleaned$ArrayInvoked, common_stats_cleaned$TreeInvoked)
+
+colnames(part_invoked_df)[colnames(part_invoked_df) == 'common_stats_cleaned.EmptyInvoked'] <- 'Empty'
+colnames(part_invoked_df)[colnames(part_invoked_df) == 'common_stats_cleaned.ArrayInvoked'] <- 'Array'
+colnames(part_invoked_df)[colnames(part_invoked_df) == 'common_stats_cleaned.TreeInvoked'] <- 'Tree'
+
+ggplot(stack(part_invoked_df), aes(x = ind, y = values)) +  geom_boxplot() + labs(x="Datenstruktur", y="Anzahl Aufrufe", color="Typ") + ggtitle("Verteilung Datenstrukturen (aufgerufen)")
+
+
+ggplot(common_stats_cleaned, aes(x =IntInvoked))  +  geom_boxplot() + labs(x="Anzahl Aufrufe", y="Integer", color="Typ") + ggtitle("Verteilung Integer (aufgerufen)")
+```
+
+Intmaps vom Typ IMInteger werden am häufigsten angelegt, gefolgt von IMEMpty und auf Platz 3 IMArray. Schlusslicht bildet IMTree. Dabei ergeben sich folgende Verhältnisse:
+
+IMInteger wird im Durschnitt `r mean_empty_int_ratio`  und im Median `r med_empty_int_ratio`
+häufiger aufgerufen als IMEmpty. Wobei das niedrigste Verhältnis bei `r min_empty_int_ratio` und das höchste Verhältnis `r sprintf(max_empty_int_ratio, fmt = '%#.4f')` bei liegt.
+
+IMInteger wird im Durschnitt `r mean_array_int_ratio`  und im Median `r med_array_int_ratio`
+häufiger aufgerufen als IMArray. Wobei das niedrigste Verhältnis bei `r min_array_int_ratio` und das höchste Verhältnis `r sprintf(max_array_int_ratio, fmt = '%#.4f')` bei liegt.
+
+IMInteger wird im Durschnitt `r mean_tree_int_ratio`  und im Median `r med_tree_int_ratio`
+häufiger aufgerufen als IMTree. Wobei das niedrigste Verhältnis bei `r min_tree_int_ratio` und das höchste Verhältnis `r sprintf(max_tree_int_ratio, fmt = '%#.4f')` bei liegt.
+
+Es gibt also durchaus Fälle in denen IMArray oder IMEmpty häufiger angelegt werden als IMInteger. Keinen Fall aber, wo IMTree häufiger als IMInteger angelegt wird.
+
+IMArray wird im Durschnitt `r mean_tree_array_ratio`  und im Median `r med_tree_array_ratio`
+häufiger aufgerufen als IMTree. Wobei das niedrigste Verhältnis bei `r min_tree_array_ratio` und das höchste Verhältnis `r sprintf(max_tree_array_ratio, fmt = '%#.4f')` bei liegt.
+
+Die Häufigkeit beider Datenstrukturen ist also im Mittel recht ähnlich, wobei IMArray aber klar häufiger verwendet wird. Es kann aber auch vorkommen, dass IMTree bis zu `r 1/min_tree_array_ratio` häufiger verwendet wird als IMArray.
+
+Nun soll noch die Verteilung der Löschungen auf die einzelnen Datentypen betrachtet werden. Diesmal wird IMEmpty gesondert betrachtet werden:
+
+```{r, echo=FALSE}
+
+# Comparison: Deleted Intmaps per type
+part_deleted_df <- data.frame(common_stats_cleaned$IntDeleted, common_stats_cleaned$ArrayDeleted, common_stats_cleaned$TreeDeleted)
+
+colnames(part_deleted_df)[colnames(part_deleted_df) == 'common_stats_cleaned.IntDeleted'] <- 'Int'
+colnames(part_deleted_df)[colnames(part_deleted_df) == 'common_stats_cleaned.ArrayDeleted'] <- 'Array'
+colnames(part_deleted_df)[colnames(part_deleted_df) == 'common_stats_cleaned.TreeDeleted'] <- 'Tree'
+
+ggplot(stack(part_deleted_df), aes(x = ind, y = values)) +  geom_boxplot() + labs(x="Datenstruktur", y="Anzahl Löschungen", color="Typ") + ggtitle("Verteilung Datenstrukturen (gelöscht)")
+
+
+ggplot(common_stats_cleaned, aes(x = EmptyDeleted))  +  geom_boxplot() + labs(x="Anzahl Löschungen", y="Empty", color="Typ") + ggtitle("Verteilung Empty (gelöscht)")
+```
+
+Klar zu sehen ist, dass IMEmpty am häufigsten gelöscht wird. In weiten Abstand folgen dann IMTree, IMArray und schließlich IMInteger. Dies lässt sich daraus erklären, dass ...
+
+Am seltensten wurde **IMEmpty `r min_empty_deleted`** und am häufigsten **`r max_empty_deleted`** gelöscht. Im Durschnitt **`r sprintf(mean_empty_deleted, fmt = '%#.4f')`** und im Median **`r med_empty_deleted`**.
+Der Modus beträgt **`r mode_empty_deleted`**.
+
+Am seltensten wurde **IMTree `r min_tree_deleted`** und am häufigsten **`r max_tree_deleted`** gelöscht. Im Durschnitt **`r sprintf(mean_tree_deleted, fmt = '%#.4f')`** und im Median **`r med_tree_deleted`**. Der Modus beträgt **`r mode_tree_deleted`**.
+
+Am seltensten wurde **IMArray `r min_array_deleted`** und am häufigsten **`r max_array_deleted`** gelöscht. Im Durschnitt **`r sprintf(mean_array_deleted, fmt = '%#.4f')`** und im Median **`r med_array_deleted`**. Der Modus beträgt **`r mode_array_deleted`**.
+
+IMInteger wird nie gelöscht.
+
+Zu erkennen ist also, dass das Löschen von Intmaps seltener vorkommt und in vielen Fällen so gut wie gar nicht geschiet während der Problemverarbeitung.
+
+
+Verteilung auf Zeit?
 Wie häufig Empty - spielt Größe eine Rolle
 Wie häufig Single - spielt Größe eine Rolle 
-Max Value Integer 
-Wie häufig Array pro Problem-Klasse
-Wie häufig Tree pro Problem-Klasse
-Welches ist der häufigste Datentyp
+Zeitliche Abhängigkeit?
 
+## Tiefere Untersuchung: Tree und Array
 ```{r, echo=FALSE}
-#common_stats
+problems_array_alt <- readRDS("problems_array_alt.rds")
+problems_tree_alt <- readRDS("problems_tree_alt.rds")
+
+summary(problems_array_alt)
+summary(problems_tree_alt)
+
+```
+In diesem Abschnitt sollen IMArray und IMTree genauer untersucht und miteinander verglichen werden.
+
+Aufgrund der Größe der eingelesenen Datensätze wurden diese in einer gesonderten Datei bereinigt und im komprimierten RDS-Format abgespeichert.
+Es ist aufgefallen, dass es in mehreren Fällen zu Bereichsüberschreitungen gekommen ist - da das Verhalten bei einem arithmetischen Überlauf für C nicht definiert ist, lassen sich diese Werte auch nicht mehr nachvollziehen. Alle negativen Werte der Counter-Variablen werden deshalb entfernt
+Bei Tree wurden auch alle Werte für die Dichte entfernt, welche außerhalb des Intervalls [0,1] lagen.
+Diese Fehlwerte ergeben sich auch aus undefiniertem Verhalten bei Integer-Overflow.
+
+
+### Array
+```{r, echo=FALSE}
 ```
 
-#Tiefere Untersuchung: Tree und Array
-MinKey            : int  0 0 0 0 0 0 0 0 0 0 ...
-MaxKey            : int  0 0 0 0 0 0 0 0 0 0 ...
-Offset            : int  NA NA NA NA NA NA NA NA NA NA ...
-Size              : int  NA NA NA NA NA NA NA NA NA NA ...
-Grow              : int  NA NA NA NA NA NA NA NA NA NA ...
-Integer           : logi  NA NA NA NA NA NA ...
-CountGetVal       : num  NA NA NA NA NA NA NA NA NA NA ...
-CountGetRef       : num  NA NA NA NA NA NA NA NA NA NA ...
-CountAssign       : num  NA NA NA NA NA NA NA NA NA NA ...
-CountDelKey       : int  NA NA NA NA NA NA NA NA NA NA ...
-CountArrayToTree  : num  NA NA NA NA NA NA NA NA NA NA ...
-CountTreeToArray  : num  NA NA NA NA NA NA NA NA NA NA ...
-NumberOfItems     : int  NA NA NA NA NA NA NA NA NA NA ...
-NumberOfEmptyCells: int  NA NA NA NA NA NA NA NA NA NA ...
-TreeHeight        : int  NA NA NA NA NA NA NA NA NA NA ...
-MinNode           : int  NA NA NA NA NA NA NA NA NA NA ...
-MaxNode           : int  NA NA NA NA NA NA NA NA NA NA ...
-MinMaxDistance    : int  NA NA NA NA NA NA NA NA NA NA ...
-Linearity         : num  NA NA NA NA NA NA NA NA NA NA ...
-Density           : num  NA NA NA NA NA NA NA NA NA NA ...
-Structure         : num  NA NA NA NA NA NA NA NA NA NA ...
+### Baum (Linearität und Dichte)
 
+```{r, echo=FALSE}
+TreeLinearity <- problems_tree_alt %>% filter(!is.na(Linearity)) %>% filter(TreeHeight < 50)
 
+ggplot(data = TreeLinearity, aes(x = Linearity, y = TreeHeight, group=factor(TreeHeight))) + stat_boxplot(geom = "errorbar") + geom_boxplot() + labs(x="Linearität", y="Baumhöhe", color="Typ")  + ggtitle("Linearität im Bezug zur Größe betrachtet")
+# 
+# TreeLinearity %>% ggplot(aes(x=Density, y=as.factor(TreeHeight), group=factor(TreeHeight))) + stat_boxplot(geom = "errorbar") + geom_boxplot() + labs(x="Dichte", y="Baumhöhe")  + ggtitle("Verteilung Dichte auf Baumhöhe")
+
+```
 ## Vergleich zwischen Array und Tree
 Größe
 Dichte 
 Verwendung (Also wie oft wurden die Strukturen insgesamt verwendet und wie oft wurden welche Funktionen angewendet)
 
 ```{r, echo=FALSE}
-
-```
-
-### Baum (Linearität und Dichte)
-
-```{r, echo=FALSE}
-TreeLinearity <- problems %>% filter(!is.na(Linearity)) 
-
-ggplot(data = TreeLinearity, aes(x = Linearity, y = TreeHeight, group=factor(TreeHeight))) + stat_boxplot(geom = "errorbar") + geom_boxplot() + labs(x="Linearität", y="Baumhöhe", color="Typ")  + ggtitle("Linearität im Bezug zur Größe betrachtet")
-
-TreeLinearity %>% ggplot(aes(x=Density, y=as.factor(TreeHeight), group=factor(TreeHeight))) + stat_boxplot(geom = "errorbar") + geom_boxplot() + labs(x="Dichte", y="Baumhöhe")  + ggtitle("Verteilung Dichte auf Baumhöhe")
 
 ```
