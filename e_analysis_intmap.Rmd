@@ -364,7 +364,7 @@ ggplot(common_stats_cleaned, aes(x = EmptyDeleted))  +  geom_boxplot() + labs(x=
 
 Klar zu sehen ist, dass IMEmpty am häufigsten gelöscht wird. In weiten Abstand folgen dann IMTree, IMArray und schließlich IMInteger. Es wird angenommen, dass häufiger zwischen IMArray und IMTree gewechselt wird, aber im Schnitt eher zur Anlage von IMArray tendiert wird - die Intmaps also meist recht dicht sind.
 
-Am seltensten wurde **IMEmpty `r min_empty_deleted`** und am häufigsten **`r max_empty_deleted`** gelöscht. Im Durschnitt **`r sprintf(mean_empty_deleted, fmt = '%#.4f')`** und im Median **`r med_empty_deleted`**.
+Am seltensten wurde **IMEmpty `r min_empty_deleted`** und am häufigsten **`r max_empty_deleted`** gelöscht. Im Durchschnitt **`r sprintf(mean_empty_deleted, fmt = '%#.4f')`** und im Median **`r med_empty_deleted`**.
 Der Modus beträgt **`r mode_empty_deleted`**.
 
 Am seltensten wurde **IMTree `r min_tree_deleted`** und am häufigsten **`r max_tree_deleted`** gelöscht. Im Durschnitt **`r sprintf(mean_tree_deleted, fmt = '%#.4f')`** und im Median **`r med_tree_deleted`**. Der Modus beträgt **`r mode_tree_deleted`**.
@@ -442,8 +442,10 @@ In diesem Abschnitt sollen IMArray und IMTree genauer untersucht und miteinander
 
 ```{r, echo=FALSE}
 #problems_array_alt<- readRDS("problems_array.rds")
+######################
+problems_array <- readRDS("problems_array.rds")
 problems_tree <- readRDS("problems_tree.rds")
-
+#####################
 #problems_array_alt <- readRDS("problems_array_alt.rds")
 #problems_tree_alt <- readRDS("problems_tree_alt.rds")
 
@@ -456,7 +458,7 @@ problems_tree <- readRDS("problems_tree.rds")
 Hier eine Übersicht der allgemeinen statistischen Werte für IMArray
 
 ```{r, echo=FALSE}
-# summary(problems_array)
+summary(problems_array)
 #summary(problems_array_alt)
 
 ```
@@ -572,31 +574,253 @@ Größe
 Dichte 
 Verwendung (Also wie oft wurden die Strukturen insgesamt verwendet und wie oft wurden welche Funktionen angewendet)
 
+
+#### IMArray
 ```{r, echo=FALSE}
-problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountGetVal)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
+#a <- problems_array[problems_array$NumberOfItems > 3]
+#summary(a)
+```
 
-problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountGetRef)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
+```{r, echo=FALSE}
+problems_array %>% ggplot(aes(x=CountGetVal)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 40000000)) + ggtitle("Array - CountGetVal (Logarithmische Skalierung)")
 
-problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountAssign)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
+problems_array %>% filter(NumberOfItems > 3) %>% ggplot(aes(x=CountGetVal)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 40000000)) + ggtitle("Array - CountGetVal, ab 3. Quartil (Logarithmische Skalierung)")
+```
 
-problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountDelKey)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
+```{r, echo=FALSE}
+problems_array %>% ggplot(aes(x=CountGetRef)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 40000000)) + ggtitle("Array - CountGetRef (Logarithmische Skalierung)")
+```
 
-problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountArrayToTree)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
+```{r, echo=FALSE}
+problems_array %>% filter(NumberOfItems > 3) %>% ggplot(aes(x=CountGetRef)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 4000000)) + ggtitle("Array - CountGetRef, ab 3. Quartil (Logarithmische Skalierung)")
+```
 
-problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountTreeToArray)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
 
-problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=NumberOfItems)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
 
-problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=MinMaxDistance)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
+```{r, echo=FALSE}
+problems_array %>% ggplot(aes(x=CountAssign)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 3000)) + ggtitle("Array - CountAssign (Logarithmische Skalierung)")
+```
 
-problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=Linearity)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
+```{r, echo=FALSE}
+problems_array %>% filter(NumberOfItems > 3) %>% ggplot(aes(x=CountAssign)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 3000)) + ggtitle("Array - CountAssign, ab 3. Quartil (Logarithmische Skalierung)")
+```
 
+
+```{r, echo=FALSE}
+problems_array %>% ggplot(aes(x=CountDelKey)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 17500)) + ggtitle("Array - CountDelKey (Logarithmische Skalierung)")
+```
+
+```{r, echo=FALSE}
+problems_array %>% filter(NumberOfItems > 3) %>% ggplot(aes(x=CountDelKey)) + stat_boxplot(geom = "errorbar") + geom_boxplot()  + scale_x_continuous(trans = "log2", limits = c(-0.01, 17500)) + ggtitle("Array - CountDelKey, ab 3. Quartil (Logarithmische Skalierung)")
+
+```
+
+
+```{r, echo=FALSE}
+problems_array %>% ggplot(aes(x=CountArrayToTree)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 17500)) + ggtitle("Array - CountArrayToTree (Logarithmische Skalierung)")
+```
+
+```{r, echo=FALSE}
+problems_array %>% filter(NumberOfItems > 3) %>% ggplot(aes(x=CountArrayToTree)) + stat_boxplot(geom = "errorbar") + geom_boxplot()+ scale_x_continuous(trans = "log2", limits = c(-0.01, 2000)) + ggtitle("Array - CountArrayToTree, ab 3. Quartil (Logarithmische Skalierung)")
+```
+
+```{r, echo=FALSE}
+problems_array %>% ggplot(aes(x=CountTreeToArray)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 20000)) + ggtitle("Array - CountTreeToArray (Logarithmische Skalierung)")
+```
+
+```{r, echo=FALSE}
+problems_array %>% filter(NumberOfItems > 3) %>% ggplot(aes(x=CountTreeToArray)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 2000)) + ggtitle("Array - CountTreeToArray, ab 3. Quartil (Logarithmische Skalierung)")
+```
+
+
+```{r, echo=FALSE}
+problems_array %>% ggplot(aes(x=NumberOfItems)) + stat_boxplot(geom = "errorbar") + geom_boxplot()  + scale_x_continuous(trans = "log2", limits = c(-0.01, 50000)) + ggtitle("Array - NumberOfItems (Logarithmische Skalierung)")
+```
+
+```{r, echo=FALSE}
+problems_array %>% filter(NumberOfItems > 3) %>% ggplot(aes(x=NumberOfItems)) + stat_boxplot(geom = "errorbar") + geom_boxplot()+ scale_x_continuous(trans = "log2", limits = c(-0.01,  50000)) + ggtitle("Array - NumberOfItems, ab 3. Quartil (Logarithmische Skalierung)")
+```
+
+```{r, echo=FALSE}
+problems_array %>% ggplot(aes(x=MinMaxDistance)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01,  500000)) + ggtitle("Array - MinMaxDistance (Logarithmische Skalierung)")
+```
+
+```{r, echo=FALSE}
+problems_array %>% filter(NumberOfItems > 3) %>% ggplot(aes(x=MinMaxDistance)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01,  500000)) + ggtitle("Array - MinMaxDistance, ab 3. Quartil (Logarithmische Skalierung)")
+
+```
+
+```{r, echo=FALSE}
+###########
+#problems_array %>% filter(NumberOfItems > 3) %>% ggplot(aes(x=Linearity)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
+###########
+
+problems_array %>% ggplot(aes(x=Density)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + ggtitle("Array - Density")
+```
+
+```{r, echo=FALSE}
+problems_array %>% filter(NumberOfItems > 3) %>% ggplot(aes(x=Density)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + ggtitle("Array - Density, ab 3. Quartil")
+
+```
+
+Dichte liegt 
+Wie oft wie viele Histogramm
+60-65 sekunden
+Aktueller Hauptlauf durch die Hauptschleife - Aufräumen kann lange dauern
+GetRef wird eingefügt
+Intmap entsprechen ...
+
+Kann neue Verzweigung auslösen
+
+
+#### IMTree
+```{r, echo=FALSE}
+#summary(problems_tree)
+```
+
+
+```{r, echo=FALSE}
+#problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountGetVal)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 25000000)) + ggtitle("CountGetVal (Logarithmische Skalierung)")
+
+##, breaks=c(0)
+```
+
+
+```{r, echo=FALSE}
+problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountGetVal)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 25000000)) + ggtitle("IMTree - CountGetVal, ab 3. Quartil (Logarithmische Skalierung)")
+```
+
+
+
+
+```{r, echo=FALSE}
+problems_tree %>% ggplot(aes(x=CountGetRef)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 3000000)) + ggtitle("CountGetRef (Logarithmische Skalierung)")
+```
+
+
+```{r, echo=FALSE}
+problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountGetRef)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 3000000)) + ggtitle("CountGetRef, ab 3. Quartil (Logarithmische Skalierung)")
+```
+
+
+
+
+
+```{r, echo=FALSE}
+problems_tree %>% ggplot(aes(x=CountAssign)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 320)) + ggtitle("CountAssign (Logarithmische Skalierung)")
+```
+
+```{r, echo=FALSE}
+problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountAssign)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 320)) + ggtitle("CountAssign, ab 3. Quartil (Logarithmische Skalierung)")
+```
+
+
+
+
+```{r, echo=FALSE}
+problems_tree %>% ggplot(aes(x=CountDelKey)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 10000)) + ggtitle("CountDelKey (Logarithmische Skalierung)")
+```
+
+```{r, echo=FALSE}
+problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountDelKey)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 10000)) + ggtitle("CountDelKey, ab 3. Quartil (Logarithmische Skalierung)")
+```
+
+
+
+
+
+```{r, echo=FALSE}
+problems_tree %>% ggplot(aes(x=CountArrayToTree)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "sqrt", limits = c(-0.01, 2000)) + ggtitle("CountArrayToTree (Wurzelskalierung)")
+```
+
+```{r, echo=FALSE}
+problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountArrayToTree)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "sqrt", limits = c(-0.01, 2000)) + ggtitle("CountArrayToTree, ab 3. Quartil (Wurzelskalierung)")
+```
+
+
+
+
+```{r, echo=FALSE}
+problems_tree %>% ggplot(aes(x=CountTreeToArray)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "sqrt", limits = c(-0.01, 2000)) + ggtitle("CountTreeToArray (Wurzelskalierung)")
+```
+
+
+```{r, echo=FALSE}
+problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=CountTreeToArray)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "sqrt", limits = c(-0.01, 2000)) + ggtitle("CountTreeToArray, ab 3. Quartil (Wurzelskalierung)")
+```
+
+
+
+
+
+```{r, echo=FALSE}
+problems_tree %>% ggplot(aes(x=NumberOfItems)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 6000)) + ggtitle("NumberOfItems (Logarithmische Skalierung)")
+```
+
+```{r, echo=FALSE}
+problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=NumberOfItems)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 6000)) + ggtitle("NumberOfItems, ab 3. Quartil (Logarithmische Skalierung)")
+```
+
+
+
+
+```{r, echo=FALSE}
+problems_tree %>% ggplot(aes(x=MinMaxDistance)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 400000)) + ggtitle("MinMaxDistance (Logarithmische Skalierung)")
+```
+
+```{r, echo=FALSE}
+problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=MinMaxDistance)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "log2", limits = c(-0.01, 400000)) + ggtitle("MinMaxDistance, ab 3. Quartil (Logarithmische Skalierung)")
+```
+
+
+
+
+
+```{r, echo=FALSE}
+problems_tree %>% ggplot(aes(x=Linearity)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "sqrt", limits = c(-0.01, 200)) + ggtitle("Linearity (Wurzelskalierung)")
+
+```
+
+```{r, echo=FALSE}
+problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=Linearity)) + stat_boxplot(geom = "errorbar") + geom_boxplot() + scale_x_continuous(trans = "sqrt", limits = c(-0.01, 200)) + ggtitle("Linearity, ab 3. Quartil (Wurzelskalierung)")
+
+```
+
+Einie Ausreißer nach 50 (Größter bei 155) - der Großteil der Ausreißer liegt unter dem Wert 50.
+
+
+
+```{r, echo=FALSE}
+problems_tree %>% filter(NumberOfItems > 7) %>% filter(Linearity < 50) %>% ggplot(aes(x=Linearity)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
+```
+
+
+Verteilung?
+
+
+```{r, echo=FALSE}
+problems_tree %>% ggplot(aes(x=Density)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
+
+```
+
+```{r, echo=FALSE}
 problems_tree %>% filter(NumberOfItems > 7) %>% ggplot(aes(x=Density)) + stat_boxplot(geom = "errorbar") + geom_boxplot()
 
 ```
 
-Fazit
 
+Dichte für Bäume mit mehr als 7 Knoten: Bei weniger gibt es Verzerrung, denn meist sind diese voll besetzt. Von Interesse sind vor allem größere Bäume.
+
+Dichte für Bäume liegt meist unter 0,125 und davon mehr als die Hälfte unter 0,02. Damit sind sie sehr dünn besiedelt. Aufgrund des höheren Speicheraufwandes so gewollt. 
+(Dichte für Bäume und Arrays)
+
+
+Dichte ist geringer als bei Arrays 
+
+
+
+Fazit
+Im Allgemeinen lässt sich sagen, dass für ein Problem meist recht kleine Intmaps angelegt werden, dafür aber sehr viele.
 Filtern nach Dauer der Probleme
 
 Korrelation zwischen

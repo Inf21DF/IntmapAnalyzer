@@ -76,6 +76,8 @@ summary(problems_tree)
 saveRDS(problems_array, "problems_array.rds")
 saveRDS(problems_tree, "problems_tree.rds")
 
+
+#???
 problems_tree_alt2 <- problems_tree_alt2 %>% filter(NumberOfItems > 3)
 problems_array_alt2 <- problems_array_alt2 %>% filter(NumberOfItems > 3)
 
@@ -111,6 +113,30 @@ for (file_name in files_maxtime_lst) {
   i = i+1
 }
 problems_alt <- do.call(rbind, problem_alt_lst)
+
+#Bei Arithmetischen Problemen auftretend
+#Monomorphe Symbole
+#Typfehler zw. Int und Float
+
+# IMSingle wird gecastet zu IMEmpty, darum wird nie gelöscht
+
+#Hauptschleife teilweise lange durchiteriert, damit große Ausreißer nach oben
+
+
+#Je tiefer wir kommen desto dünner werden die Tries
+#Starke Gewichtung auf erste Ebene der Tries, damit hohe Dichte und deswegen Array 
+#Sobald Eindutig dann IMSingle
+#Bei Einfügung immer
+#Beim Lesen 
+
+#Intmap realisiert Verzweigung im Tree
+#Ursprünglich Arrays 
+#Vergrößerung des Arrays bei GetRef
+
+#logarithmische Skala
+
+#Rekursive Function für Rückgabe Anzahl Intmap-type
+#Print Aufsplitten
 
 # DATA PREPARATION - ARRAY
 problems_array_alt <- problems_alt %>% dplyr::filter(IntMapType == "IMArray")
