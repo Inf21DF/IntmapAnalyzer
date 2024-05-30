@@ -684,9 +684,9 @@ Kann neue Verzweigung auslösen
 
 ```{r, echo=FALSE}
 # IMArray-Korrelation
-#problems_array %>% ggplot(aes(x = NumberOfItems, y = CountTreeToArray)) + geom_point() + ggtitle("IMArray2 - Korrelation zw. CountTreeToArray und Elementenzahl")
-#problems_array %>% ggplot(aes(x = NumberOfItems, y = CountArrayToTree)) + geom_point(alpha = 0.2)  + ggtitle("IMArray - Korrelation zw. CountArrayToTree und Elementenzahl")
-#problems_array %>% ggplot(aes(x = NumberOfItems, y = Density)) + geom_point(alpha = 0.2)  + ggtitle("IMArray - Korrelation zw. Dichte und Elementenzahl")
+problems_array %>% ggplot(aes(x = NumberOfItems, y = CountTreeToArray)) + geom_point() + ggtitle("IMArray2 - Korrelation zw. CountTreeToArray und Elementenzahl")
+problems_array %>% ggplot(aes(x = NumberOfItems, y = CountArrayToTree)) + geom_point(alpha = 0.2)  + ggtitle("IMArray - Korrelation zw. CountArrayToTree und Elementenzahl")
+problems_array %>% ggplot(aes(x = NumberOfItems, y = Density)) + geom_point(alpha = 0.2)  + ggtitle("IMArray - Korrelation zw. Dichte und Elementenzahl")
 
 ```
 
@@ -842,10 +842,10 @@ Dichte ist geringer als bei Arrays
 
 ```{r, echo=FALSE}
 # IMTree-Korrelation
-#problems_tree %>% ggplot(aes(x = NumberOfItems, y = CountTreeToArray)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. CountTreeToArray und Elementenzahl")
-#problems_tree %>% ggplot(aes(x = NumberOfItems, y = CountArrayToTree)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. CountArrayToTree und Elementenzahl")
-#problems_tree %>% ggplot(aes(x = NumberOfItems, y = Linearity)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. Linearität und Elementenzahl")
-#problems_tree %>% ggplot(aes(x = NumberOfItems, y = Density)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. Dichte und Elementenzahl")
+problems_tree %>% ggplot(aes(x = NumberOfItems, y = CountTreeToArray)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. CountTreeToArray und Elementenzahl")
+problems_tree %>% ggplot(aes(x = NumberOfItems, y = CountArrayToTree)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. CountArrayToTree und Elementenzahl")
+problems_tree %>% ggplot(aes(x = NumberOfItems, y = Linearity)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. Linearität und Elementenzahl")
+problems_tree %>% ggplot(aes(x = NumberOfItems, y = Density)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. Dichte und Elementenzahl")
 
 ```
 
