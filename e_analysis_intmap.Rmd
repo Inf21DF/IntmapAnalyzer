@@ -307,10 +307,10 @@ colnames(part_invoked_df)[colnames(part_invoked_df) == 'common_stats_cleaned.Emp
 colnames(part_invoked_df)[colnames(part_invoked_df) == 'common_stats_cleaned.ArrayInvoked'] <- 'Array'
 colnames(part_invoked_df)[colnames(part_invoked_df) == 'common_stats_cleaned.TreeInvoked'] <- 'Tree'
 
-ggplot(stack(part_invoked_df), aes(x = ind, y = values)) +  geom_boxplot() + labs(x="Datenstruktur", y="Anzahl Aufrufe", color="Typ") + ggtitle("Verteilung Datenstrukturen (aufgerufen)")
+ggplot(stack(part_invoked_df), aes(x = ind, y = values)) +  geom_boxplot() + labs(x="Datenstruktur", y="Anzahl", color="Typ") + ggtitle("Verteilung Datenstrukturen")
 
 
-ggplot(common_stats_cleaned, aes(x =IntInvoked))  +  geom_boxplot() + labs(x="Anzahl Aufrufe", y="Integer", color="Typ") + ggtitle("Verteilung IMSingle (aufgerufen)")
+ggplot(common_stats_cleaned, aes(x =IntInvoked))  +  geom_boxplot() + labs(x="Anzahl", y="Integer", color="Typ") + ggtitle("Verteilung IMSingle")
 ```
 
 Intmaps vom Typ IMSingle werden am häufigsten angelegt, gefolgt von IMEMpty und auf Platz 3 IMArray. Schlusslicht bildet IMTree. Dabei ergeben sich folgende Verhältnisse:
@@ -684,8 +684,12 @@ Kann neue Verzweigung auslösen
 
 ```{r, echo=FALSE}
 # IMArray-Korrelation
-problems_array %>% ggplot(aes(x = NumberOfItems, y = CountTreeToArray)) + geom_point() + ggtitle("IMArray2 - Korrelation zw. CountTreeToArray und Elementenzahl")
-problems_array %>% ggplot(aes(x = NumberOfItems, y = CountArrayToTree)) + geom_point(alpha = 0.2)  + ggtitle("IMArray - Korrelation zw. CountArrayToTree und Elementenzahl")
+problems_array %>% ggplot(aes(x = NumberOfItems, y = CountTreeToArray)) + geom_point(alpha = 0.2) + scale_y_continuous(trans = "log2") +  ggtitle("IMArray2 - Korr. zw. CountTreeToArray und Elementenzahl (y log. skaliert)")
+problems_array %>% ggplot(aes(x = NumberOfItems, y = CountArrayToTree)) + geom_point(alpha = 0.2) + scale_y_continuous(trans = "log2")  + ggtitle("IMArray - Korr. zw. CountArrayToTree und Elementenzahl (y log. skaliert)")
+
+problems_array %>% ggplot(aes(x = NumberOfItems, y = CountTreeToArray)) + geom_point(alpha = 0.2) + scale_y_continuous(trans = "sqrt") +  ggtitle("IMArray2 - Korr. zw. CountTreeToArray und Elementenzahl (y sqrt. skaliert)")
+problems_array %>% ggplot(aes(x = NumberOfItems, y = CountArrayToTree)) + geom_point(alpha = 0.2) + scale_y_continuous(trans = "sqrt")  + ggtitle("IMArray - Korr. zw. CountArrayToTree und Elementenzahl (y sqrt. skaliert)")
+
 problems_array %>% ggplot(aes(x = NumberOfItems, y = Density)) + geom_point(alpha = 0.2)  + ggtitle("IMArray - Korrelation zw. Dichte und Elementenzahl")
 
 ```
@@ -842,10 +846,14 @@ Dichte ist geringer als bei Arrays
 
 ```{r, echo=FALSE}
 # IMTree-Korrelation
-problems_tree %>% ggplot(aes(x = NumberOfItems, y = CountTreeToArray)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. CountTreeToArray und Elementenzahl")
-problems_tree %>% ggplot(aes(x = NumberOfItems, y = CountArrayToTree)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. CountArrayToTree und Elementenzahl")
-problems_tree %>% ggplot(aes(x = NumberOfItems, y = Linearity)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. Linearität und Elementenzahl")
-problems_tree %>% ggplot(aes(x = NumberOfItems, y = Density)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. Dichte und Elementenzahl")
+problems_tree %>% ggplot(aes(x = NumberOfItems, y = CountTreeToArray)) + geom_point(alpha = 0.2) + scale_y_continuous(trans = "log2") + ggtitle("IMTree - Korr. zw. CountTreeToArray und Elementzahl (y log. skaliert)")
+problems_tree %>% ggplot(aes(x = NumberOfItems, y = CountArrayToTree)) + geom_point(alpha = 0.2) + scale_y_continuous(trans = "log2") + ggtitle("IMTree - Korr. zw. CountArrayToTree und Elementzahl (y log. skaliert)")
+
+problems_tree %>% ggplot(aes(x = NumberOfItems, y = CountTreeToArray)) + geom_point(alpha = 0.2) + scale_y_continuous(trans = "sqrt") + ggtitle("IMTree - Korr. zw. CountTreeToArray und Elementzahl (y sqrt. skaliert)")
+problems_tree %>% ggplot(aes(x = NumberOfItems, y = CountArrayToTree)) + geom_point(alpha = 0.2) + scale_y_continuous(trans = "sqrt") + ggtitle("IMTree - Korr. zw. CountArrayToTree und Elementzahl (y sqrt. skaliert)")
+
+problems_tree %>% ggplot(aes(x = NumberOfItems, y = Linearity)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. Linearität und Elementzahl")
+problems_tree %>% ggplot(aes(x = NumberOfItems, y = Density)) + geom_point(alpha = 0.2)  + ggtitle("IMTree - Korrelation zw. Dichte und Elementzahl")
 
 ```
 
