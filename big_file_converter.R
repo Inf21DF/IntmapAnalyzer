@@ -16,7 +16,7 @@ common_files_list <- list.files(path = "csv_common_stats")
 common_stat_lst <- vector("list", length=length(common_files_list))
 i = 1
 
-# READ FILES AND BIND THEM
+# READ FILES AND (IN DARKNESS) BIND THEM
 for (file_name in common_files_list) {
   file_path <- paste("csv_common_stats/", file_name, sep='')
   first_file <- read.csv(file_path, sep=";", header=TRUE, row.names=NULL)
@@ -78,11 +78,11 @@ saveRDS(problems_tree, "problems_tree.rds")
 
 
 #???
-problems_tree_alt2 <- problems_tree_alt2 %>% filter(NumberOfItems > 3)
-problems_array_alt2 <- problems_array_alt2 %>% filter(NumberOfItems > 3)
+#problems_tree_alt2 <- problems_tree_alt2 %>% filter(NumberOfItems > 3)
+#problems_array_alt2 <- problems_array_alt2 %>% filter(NumberOfItems > 3)
 
-saveRDS(problems_array_alt2, "problems_array_alt_2.rds")
-saveRDS(problems_tree_alt2, "problems_tree_alt_2.rds")
+#saveRDS(problems_array_alt2, "problems_array_alt_2.rds")
+#saveRDS(problems_tree_alt2, "problems_tree_alt_2.rds")
 problems_array <- readRDS("problems_array.rds")
 problems_tree <- readRDS("problems_tree.rds")
 str(problems_array)
@@ -167,117 +167,7 @@ write.csv(problems_tree_alt, "problems_tree_alt.csv", row.names = TRUE)
 problems_array_alt <- readRDS("problems_array_alt.rds")
 problems_tree_alt <- readRDS("problems_tree_alt.rds")
 
-str(problems_array_alt)
-
-library(ggplot2)
-
-ggplot(problems_array_alt, aes(x = NumberOfItems, y = CountGetRef)) +
-  stat_density_2d()
-
-ggplot(problems_tree_alt, aes(x = NumberOfItems, y = CountGetRef)) +
-  geom_point(alpha = 0.2)
-
-
-
-# LINKS
-#https://statistik-dresden.de/daten-mit-r-in-bloecken-verarbeiten-mit-iotools-big-data-werkzeug/
-#https://cran.r-project.org/web/packages/iotools/iotools.pdf
-#https://campus.datacamp.com/courses/scalable-data-processing-in-r/working-with-iotools?ex=8
-#https://statistik-dresden.de/daten-mit-r-in-bloecken-verarbeiten-mit-iotools-big-data-werkzeug/
-#<http://rmarkdown.rstudio.com>.
-
-########################################################
-#readfile <- read.csv("immo_data.csv")
-#str(readfile)
-#head(readfile, n=3)
-#save(readfile, file='test.rda')
-
-#load('test.rda')
-#str(readfile)
-#head(readfile, n=3)
-
-#immo_data.csv
-
-
-# flights.csv
-# readfile <- fread("outData.csv")
-# col_types <- sapply(readfile, typeof)
-# print(col_types)
-# results <- chunk.apply("outData.csv", function(x) {
-#    d <- dstrsplit(x, col_types = col_types, sep = ",")
-#    c(quantile(d[, 16], c(0.25, 0.5, 0.75), na.rm = TRUE), n = nrow(d))
-#    # Hier können andere Funktionen zur Datenaufbereitung oder Datenanalyse stehen
-#    },
-# CH.MAX.SIZE = 8e6)
-#, parallel = 2
-
-# str(results)
-# head(results, n=3)
-
-#R < scriptName.R --no-save
-
-#col_types <- sapply(flights, typeof)
-
-#install.packages('dplyr')
-#install.packages('R.utils')
-#install.packages(iotools)
-#install.packages(data.table)
-
-#in Rds-file df speichern
-
-#Verarbeitung
-
-#
-#save(df, plot, info, file="diamonds.Rda")
-#rm(list = ls()) #  remove objects from global environments
-#load("diamonds") # lädt das Objekt ohne Zuweisung in den Workspace
-#ls()
-
-
-
-#Boxplots
-##CountGetVal
-##CountGetRef
-##CountAssign
-##CountDelKey
-##CountArrayToTree
-##CountTreeToArray
-##NumberOfItems
-##MinNode
-##MaxNode
-##MinMaxDistance
-##Density
-
-
-# problem stats
-
-# problem_files_list <- list.files(path = "csv_files")
-# problem_lst = vector("list", length=length(problem_files_list))
-# i = 1
-# 
-# for (file_name in problem_files_list) {
-#   file_path <- paste("csv_files/", file_name, sep='')
-#   first_file <- read.csv(file_path, sep=";", header=TRUE, row.names=NULL)
-#   first_file$ProblemClass <- substr(file_name, 1, 3)
-#   first_file$Problem <- sub("\\.csv", "", file_name)
-#   problem_lst[[i]] <- first_file
-#   i = i+1
-# }
-# problems <- do.call(rbind, problem_lst)
-
-#./eprover -R --print-statistics --auto --soft-cpu-limit=60 --cpu-limit=300 ../../TPTP-v8.2.0/Problems/LCL/LCL524+1.p
-#./eprover -R --print-statistics --auto --soft-cpu-limit=60 --cpu-limit=300 ../../TPTP-v8.2.0/Problems/SWW/SWW237+1.p
-# nohup python3 examine_intmap.py ../../TPTP-v8.2.0/Problems/LCL/ ../../csv_files f &
-# nohup python3 examine_intmap.py ../../TPTP-v8.2.0/Problems/SWW/ ../../csv_files f &
-#install.packages('dplyr')
-#install.packages('R.utils')
-#install.packages('iotools')
-#install.packages('data.table')
-
-# problem_files_list <- list.files(path = "empty")
-# fileConn<-file("output.txt")
-# writeLines(problem_files_list, fileConn)
-# close(fileConn)
-
-# write.csv(problems_array_alt, "array_alt.csv")
-# write.csv(problems_tree_alt, "tree_alt.csv")
+#str(problems_array_alt)
+#library(ggplot2)
+#ggplot(problems_array_alt, aes(x = NumberOfItems, y = CountGetRef)) +  stat_density_2d()
+#ggplot(problems_tree_alt, aes(x = NumberOfItems, y = CountGetRef)) + geom_point(alpha = 0.2)
