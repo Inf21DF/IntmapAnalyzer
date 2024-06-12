@@ -857,20 +857,3 @@ problems_tree %>% ggplot(aes(x = NumberOfItems, y = Density)) + geom_point(alpha
 
 Fazit
 Im Allgemeinen lässt sich sagen, dass für ein Problem meist recht kleine Intmaps angelegt werden, dafür aber sehr viele.
-Filtern nach Dauer der Probleme
-
-Korrelation zwischen
-GetRef - Items
-
-Success - warum keine Ausgabe?
-
-Dichte Für Array  gut bei Median 0.25
-Dichte Für Baum Diche muss größer sein als beim Array
-
-Anzahl Knote / MinMax = Dichte
-
-
-Korrelation zwischen
-Größe - Linearität
-
-20.03
